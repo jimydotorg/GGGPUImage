@@ -328,18 +328,20 @@ NSString *const kGPUImageYUVVideoRangeConversionForLAFragmentShaderString = SHAD
         [_captureSession addInput:audioInput];
     }
     audioOutput = [[AVCaptureAudioDataOutput alloc] init];
-    
+    [audioOutput setSampleBufferDelegate:self queue:audioProcessingQueue];
+
+    [_captureSession commitConfiguration];
+
     if ([_captureSession canAddOutput:audioOutput])
     {
-        [_captureSession addOutput:audioOutput];
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            [_captureSession addOutput:audioOutput];
+        });
     }
     else
     {
         NSLog(@"Couldn't add audio output");
     }
-    [audioOutput setSampleBufferDelegate:self queue:audioProcessingQueue];
-    
-    [_captureSession commitConfiguration];
     return YES;
 }
 
